@@ -24,8 +24,8 @@ THE SOFTWARE. */
 #include <stdlib.h>
 
 typedef struct rbnode {
-	RB_KEY_TYPE key;
-	RB_VALUE_TYPE value;
+	void *key;
+	void *value;
 	int red;
 	struct rbnode *left;
 	int left_count;
@@ -35,6 +35,9 @@ typedef struct rbnode {
 } rbnode;
 
 struct rbtree {
+    int (*compare)(void *, void *);
+    void (*dispose_key)(void *);
+    void (*dispose_value)(void *);
 	rbnode *root;
 	int count;
 };
@@ -46,7 +49,7 @@ static void rbtree_treeinserthelp(rbtree *tree, rbnode *z);
 static rbnode *rbtree_after(rbtree *tree, rbnode *x);
 static rbnode *rbtree_before(rbtree *tree, rbnode *x);
 static void rbtree_treedesthelper(rbtree *tree, rbnode *x);
-static rbnode *rbtree_query(rbtree *tree, RB_KEY_TYPE key);
+static rbnode *rbtree_query(rbtree *tree, void *key);
 static void rbtree_deletefixup(rbtree *tree, rbnode *x);
 
 /* private functions */
@@ -103,14 +106,14 @@ static void rbtree_treeinserthelp(rbtree *tree, rbnode *z)
 
 	while (x != &nil) {
 		y = x;
-		if (RB_COMPARE(x->key, z->key) == 1) { /* x.key > z.key */
+		if (tree->compare(x->key, z->key) == 1) { /* x.key > z.key */
 			x = x->left;
 		} else { /* x,key <= z.key */
 			x = x->right;
 		}
 	}
 	z->parent = y;
-	if (y == tree->root || RB_COMPARE(y->key, z->key) == 1) { /* y.key > z.key */
+	if (y == tree->root || tree->compare(y->key, z->key) == 1) { /* y.key > z.key */
 		y->left = z;
 	} else {
 		y->right = z;
@@ -164,21 +167,21 @@ static void rbtree_treedesthelper(rbtree *tree, rbnode *x)
 	if (x != &nil) {
 		rbtree_treedesthelper(tree, x->left);
 		rbtree_treedesthelper(tree, x->right);
-		RB_DISPOSE_KEY(x->key);
-		RB_DISPOSE_VALUE(x->value);
+		tree->dispose_key(x->key);
+		tree->dispose_value(x->value);
 		free(x);
 	}
 }
 
-static rbnode *rbtree_query(rbtree *tree, RB_KEY_TYPE key)
+static rbnode *rbtree_query(rbtree *tree, void *key)
 {
 	rbnode *x = tree->root->left;
 
 	if (x == &nil)
 		return NULL;
 
-	while (RB_COMPARE(x->key, key) != 0) {
-		if (RB_COMPARE(x->key, key) == 1)
+	while (tree->compare(x->key, key) != 0) {
+		if (tree->compare(x->key, key) == 1)
 			x = x->left;
 		else
 			x = x->right;
@@ -250,7 +253,7 @@ static void rbtree_deletefixup(rbtree *tree, rbnode *x)
 }
 
 /* public functions */
-rbtree *rbtree_new(void)
+rbtree *rbtree_new(int (*compare)(void *, void *), void (*dispose_key)(void *), void (*dispose_value)(void *))
 {
 	rbtree *tree;
 	rbnode *temp;
@@ -271,11 +274,14 @@ rbtree *rbtree_new(void)
 	temp->red = 0;
 
 	tree->count = 0;
+    tree->compare = compare;
+    tree->dispose_key = dispose_key;
+    tree->dispose_value = dispose_value;
 
 	return tree;
 }
 
-void rbtree_add(rbtree *tree, RB_KEY_TYPE key, RB_VALUE_TYPE value)
+void rbtree_add(rbtree *tree, void *key, void *value)
 {
 	rbnode *y;
 	rbnode *x;
@@ -340,7 +346,7 @@ void rbtree_add(rbtree *tree, RB_KEY_TYPE key, RB_VALUE_TYPE value)
 	tree->root->left->red = 0;
 }
 
-void rbtree_del(rbtree *tree, RB_KEY_TYPE key)
+void rbtree_del(rbtree *tree, void *key)
 {
 	rbnode *y;
 	rbnode *x;
@@ -379,14 +385,14 @@ void rbtree_del(rbtree *tree, RB_KEY_TYPE key)
 		} else {
 			z->parent->right = y;
 		}
-		RB_DISPOSE_KEY(z->key);
-		RB_DISPOSE_VALUE(z->value);
+		tree->dispose_key(z->key);
+		tree->dispose_value(z->value);
 		free(z);
 	} else {
 		if (!(y->red))
 			rbtree_deletefixup(tree, x);
-		RB_DISPOSE_KEY(z->key);
-		RB_DISPOSE_VALUE(z->value);
+		tree->dispose_key(z->key);
+		tree->dispose_value(z->value);
 		free(y);
 	}
 del_end:
@@ -400,12 +406,12 @@ void rbtree_dispose(rbtree *tree)
 	free(tree);
 }
 
-RB_VALUE_TYPE rbtree_get(rbtree *tree, RB_KEY_TYPE key)
+void *rbtree_get(rbtree *tree, void *key)
 {
 	return rbtree_query(tree, key)->value;
 }
 
-int rbtree_contains(rbtree *tree, RB_KEY_TYPE key)
+int rbtree_contains(rbtree *tree, void *key)
 {
     return rbtree_query(tree, key) != NULL;
 }
@@ -440,12 +446,12 @@ rbiter *rbiter_prev(rbtree *tree, rbiter *iter)
 	return (rbiter *)rbtree_before(tree, iter);
 }
 
-RB_KEY_TYPE rbiter_key(rbiter *iter)
+void *rbiter_key(rbiter *iter)
 {
 	return ((rbnode *)iter)->key;
 }
 
-RB_VALUE_TYPE rbiter_value(rbiter *iter)
+void *rbiter_value(rbiter *iter)
 {
 	return ((rbnode *)iter)->value;
 }

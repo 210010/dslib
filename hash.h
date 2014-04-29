@@ -1,19 +1,35 @@
+/* The MIT License(MIT)
+ 
+ Copyright(c) 2014 Kang Min Yoo
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files(the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions :
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE. */
+
 #ifndef H_HASH
 #define H_HASH
-
-#define HM_KEY_TYPE int
-#define HM_VALUE_TYPE int
-#define HM_HASH(k) k
-#define HM_DISPOSE_KEY(k)
-#define HM_DISPOSE_VALUE(k)
 
 typedef struct hashmap hmap;
 
 hmap *hmap_new(int);
-void hmap_add(hmap *, HM_KEY_TYPE key, HM_VALUE_TYPE value);
-void hmap_del(hmap *, HM_KEY_TYPE key);
-int hmap_contains(hmap *, HM_KEY_TYPE key);
+void hmap_add(hmap *, void *key, void *value);
+void hmap_del(hmap *, void *key);
+int hmap_contains(hmap *, void *key);
 int hmap_count(hmap *);
-HM_VALUE_TYPE hmap_get(hmap *, HM_KEY_TYPE key);
+void *hmap_get(hmap *, void *key);
 
 #endif

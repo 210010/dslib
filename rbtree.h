@@ -23,29 +23,28 @@ THE SOFTWARE. */
 #ifndef H_RBTREE
 #define H_RBTREE
 
-#define RB_KEY_TYPE int
-#define RB_VALUE_TYPE int
-#define RB_COMPARE(x, y) (x < y ? -1 : (x > y ? 1 : 0))
-#define RB_DISPOSE_KEY(key) 
-#define RB_DISPOSE_VALUE(value)
-
+typedef struct {
+    void *key;
+    void *value;
+} rbkeyval;
 typedef struct rbtree rbtree;
 typedef struct rbiterator rbiter;
 
-rbtree *rbtree_new(void);
-void rbtree_add(rbtree *, RB_KEY_TYPE key, RB_VALUE_TYPE value);
-void rbtree_del(rbtree *, RB_KEY_TYPE key);
+rbtree *rbtree_new(int (*compare)(void *, void *), void (*dispose_key)(void *), void (*dispose_value)(void *));
+void rbtree_add(rbtree *, void *key, void *value);
+void rbtree_del(rbtree *, void *key);
 void rbtree_dispose(rbtree *);
-int rbtree_contains(rbtree *, RB_KEY_TYPE);
+int rbtree_contains(rbtree *, void *);
 int rbtree_count(rbtree *);
-RB_VALUE_TYPE rbtree_get(rbtree *, RB_KEY_TYPE key);
+void *rbtree_get(rbtree *, void *key);
+rbkeyval rbtree_first(rbtree *);
 
 rbiter *rbiter_first(rbtree *);
 rbiter *rbiter_last(rbtree *);
 rbiter *rbiter_next(rbtree *, rbiter *);
 rbiter *rbiter_prev(rbtree *, rbiter *);
-RB_KEY_TYPE rbiter_key(rbiter *);
-RB_VALUE_TYPE rbiter_value(rbiter *);
+void *rbiter_key(rbiter *);
+void *rbiter_value(rbiter *);
 
 #define rbtree_foreach(tree, iter) \
 	for (iter = rbiter_first(tree); iter; iter = rbiter_next(tree, iter))
