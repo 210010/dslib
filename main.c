@@ -22,7 +22,7 @@ THE SOFTWARE. */
 
 #include "rbtree.h"
 
-int main(void)
+void test_rbtree(void)
 {
 	rbtree *tree;
 	rbiter *it;
@@ -44,4 +44,8 @@ int main(void)
 		rbtree_del(tree, i);
 
 	printf("final count: %i\n", rbtree_count(tree));
+}
+
+int main(void)
+{
 }

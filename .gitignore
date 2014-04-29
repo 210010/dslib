@@ -22,4 +22,14 @@
 *.x86_64
 *.hex
 
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcxproj
+*.filters
+
+Debug
+Release
+
 .DS_store
