@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 
 #include "rbtree.h"
+#include <stdlib.h>
 
 typedef struct rbnode {
 	RB_KEY_TYPE key;
@@ -174,7 +175,7 @@ static rbnode *rbtree_query(rbtree *tree, RB_KEY_TYPE key)
 	rbnode *x = tree->root->left;
 
 	if (x == &nil)
-		return 0;
+		return NULL;
 
 	while (RB_COMPARE(x->key, key) != 0) {
 		if (RB_COMPARE(x->key, key) == 1)
@@ -183,7 +184,7 @@ static rbnode *rbtree_query(rbtree *tree, RB_KEY_TYPE key)
 			x = x->right;
 
 		if (x == &nil)
-			return 0;
+			return NULL;
 	}
 
 	return x;
@@ -404,6 +405,11 @@ RB_VALUE_TYPE rbtree_get(rbtree *tree, RB_KEY_TYPE key)
 	return rbtree_query(tree, key)->value;
 }
 
+int rbtree_contains(rbtree *tree, RB_KEY_TYPE key)
+{
+    return rbtree_query(tree, key) != NULL;
+}
+
 int rbtree_count(rbtree *tree)
 {
 	return tree->count;
@@ -421,17 +427,17 @@ rbiter *rbiter_first(rbtree *tree)
 	while (node->left != &nil)
 		node = node->left;
 
-	return node;
+	return (rbiter *)node;
 }
 
 rbiter *rbiter_next(rbtree *tree, rbiter *iter)
 {
-	return rbtree_after(tree, iter);
+	return (rbiter *)rbtree_after(tree, iter);
 }
 
 rbiter *rbiter_prev(rbtree *tree, rbiter *iter)
 {
-	return rbtree_before(tree, iter);
+	return (rbiter *)rbtree_before(tree, iter);
 }
 
 RB_KEY_TYPE rbiter_key(rbiter *iter)
@@ -456,5 +462,5 @@ rbiter *rbiter_last(rbtree *tree)
 	while (node->right != &nil)
 		node = node->right;
 
-	return node;
+	return (rbiter *)node;
 }

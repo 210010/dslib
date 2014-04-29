@@ -36,6 +36,7 @@ rbtree *rbtree_new(void);
 void rbtree_add(rbtree *, RB_KEY_TYPE key, RB_VALUE_TYPE value);
 void rbtree_del(rbtree *, RB_KEY_TYPE key);
 void rbtree_dispose(rbtree *);
+int rbtree_contains(rbtree *, RB_KEY_TYPE);
 int rbtree_count(rbtree *);
 RB_VALUE_TYPE rbtree_get(rbtree *, RB_KEY_TYPE key);
 

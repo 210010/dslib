@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "hash.h"
 
 #define RB_KEY_TYPE int
 #define RB_VALUE_TYPE HM_VALUE_TYPE
@@ -411,62 +412,17 @@ RB_VALUE_TYPE rbtree_get(rbtree *tree, RB_KEY_TYPE key)
 	return rbtree_query(tree, key)->value;
 }
 
+int rbtree_contains(rbtree *tree, RB_KEY_TYPE key)
+{
+    return rbtree_query(tree, key) != NULL;
+}
+
 int rbtree_count(rbtree *tree)
 {
 	return tree->count;
 }
 
-rbiter *rbiter_first(rbtree *tree)
-{
-	rbnode *node;
-    
-	if (tree->count <= 0)
-    return NULL;
-    
-	node = tree->root->left;
-    
-	while (node->left != &nil)
-    node = node->left;
-    
-	return node;
-}
-
-rbiter *rbiter_next(rbtree *tree, rbiter *iter)
-{
-	return rbtree_after(tree, iter);
-}
-
-rbiter *rbiter_prev(rbtree *tree, rbiter *iter)
-{
-	return rbtree_before(tree, iter);
-}
-
-RB_KEY_TYPE rbiter_key(rbiter *iter)
-{
-	return ((rbnode *)iter)->key;
-}
-
-RB_VALUE_TYPE rbiter_value(rbiter *iter)
-{
-	return ((rbnode *)iter)->value;
-}
-
-rbiter *rbiter_last(rbtree *tree)
-{
-	rbnode *node;
-    
-	if (tree->count <= 0)
-    return NULL;
-    
-	node = tree->root->left;
-    
-	while (node->right != &nil)
-    node = node->right;
-    
-	return node;
-}
-
-struct hmap {
+struct hashmap {
     int size;
     int count;
     rbtree **data;
@@ -485,7 +441,6 @@ hmap *hmap_new(int size)
 
 void hmap_add(hmap *map, HM_KEY_TYPE key, HM_VALUE_TYPE value)
 {
-    hnode *node;
     int hash, index;
     
     hash = HM_HASH(key);
@@ -499,13 +454,22 @@ void hmap_add(hmap *map, HM_KEY_TYPE key, HM_VALUE_TYPE value)
 
 void hmap_del(hmap *map, HM_KEY_TYPE key)
 {
-    hnode *node;
     int hash, index;
     
-    hash = MM_HASH(key);
+    hash = HM_HASH(key);
     index = hash % map->size;
     
     rbtree_del(map->data[index], hash);
+}
+
+int hmap_contains(hmap *map, HM_KEY_TYPE key)
+{
+    int hash, index;
+    
+    hash = HM_HASH(key);
+    index = hash % map->size;
+    
+    return rbtree_contains(map->data[index], hash);
 }
 
 int hmap_count(hmap *map)
@@ -515,5 +479,5 @@ int hmap_count(hmap *map)
 
 HM_VALUE_TYPE hmap_get(hmap *map, HM_KEY_TYPE key)
 {
-    return rbtree_get(map->data[MM_HASH(key) % map->size], MM_HASH(key));
+    return rbtree_get(map->data[HM_HASH(key) % map->size], HM_HASH(key));
 }

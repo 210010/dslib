@@ -24,7 +24,6 @@ bheap *bheap_new(int size)
 	bheap *heap = malloc(sizeof(bheap));
 	heap->size = size;
 	heap->count = 0;
-	heap->comparer = comparer;
 	heap->data = malloc(sizeof(bhkeyval) * (size + 1));
 
 	return heap;
@@ -46,12 +45,12 @@ static void heapify(bheap *heap, int i)
 
 		swap = i;
 
-		if (heap->comparer(heap->data[i], heap->data[left]) > 0)
+		if (BH_COMPARE(heap->data[i].key, heap->data[left].key) > 0)
 			swap = left;
 
 		right = RIGHT(i);
 
-		if (right <= count && heap->comparer(heap->data[right], heap->data[swap]) < 0)
+		if (right <= count && BH_COMPARE(heap->data[right].key, heap->data[swap].key) < 0)
 			swap = right;
 
 		if (swap == i)
@@ -89,9 +88,6 @@ BH_KEY_TYPE bheap_pop(bheap *heap)
 	BH_KEY_TYPE ret;
     bhkeyval *data = heap->data;
 
-	if (heap->count == 0)
-		return NULL;
-
 	ret = data[FIRST].key;
     BH_DISPOSE_VALUE(data[FIRST].value);
 	data[FIRST] = data[heap->count];
@@ -105,9 +101,6 @@ BH_VALUE_TYPE bheap_popval(bheap *heap)
 {
 	BH_VALUE_TYPE ret;
     bhkeyval *data = heap->data;
-    
-	if (heap->count == 0)
-		return NULL;
     
 	ret = data[FIRST].value;
     BH_DISPOSE_KEY(data[FIRST].key);

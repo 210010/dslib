@@ -12,6 +12,7 @@ typedef struct hashmap hmap;
 hmap *hmap_new(int);
 void hmap_add(hmap *, HM_KEY_TYPE key, HM_VALUE_TYPE value);
 void hmap_del(hmap *, HM_KEY_TYPE key);
+int hmap_contains(hmap *, HM_KEY_TYPE key);
 int hmap_count(hmap *);
 HM_VALUE_TYPE hmap_get(hmap *, HM_KEY_TYPE key);
 
