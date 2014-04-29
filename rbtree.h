@@ -23,9 +23,6 @@ THE SOFTWARE. */
 #ifndef H_RBTREE
 #define H_RBTREE
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #define RB_KEY_TYPE int
 #define RB_VALUE_TYPE int
 #define RB_COMPARE(x, y) (x < y ? -1 : (x > y ? 1 : 0))
