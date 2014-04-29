@@ -7,12 +7,12 @@ They are a lot missing data structures yet, but the ones that are already implem
 
 The following data structures are implemented:
  - Red-Black Tree
+ - Hash Map
+ - Binary Heap
 
 The following data structures will be implemented in the near future:
  - Bit-map Array
- - Heap
  - Linked List
- - Hash Table
 
-#Conventions#
+##Conventions##
 Influenced by the object-oriented languages, all data structures will be represented by an opaque structure and all data-manipulating functions will resemble "methods" of the said data structures. What it means is that if you are given a function of `rbtree_add`, you could expect that the function will behave like a public method of `rbtree` object. But, of course, C cannot behave in object-oriented manner, so you can reasonably expect that the function will receive a pointer to `rbtreee`, a key and a value as arguments.
