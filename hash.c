@@ -94,7 +94,10 @@ int hmap_contains(hmap *map, void *key)
     hash = map->hash(key);
     index = hash % map->size;
     
-    return rbtree_contains(map->data[index], hash);
+	if (map->data[index])
+		return rbtree_contains(map->data[index], (void *)hash);
+	else
+		return 0;
 }
 
 int hmap_count(hmap *map)
