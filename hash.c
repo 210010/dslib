@@ -84,7 +84,11 @@ void hmap_del(hmap *map, void *key)
     rbtree_del(map->data[index], hash);
 	map->dispose_key(key);
 	map->count--;
-	map->data[index] = NULL;
+
+	if (!rbtree_count(map->data[index])) {
+		rbtree_dispose(map->data[index]);
+		map->data[index] = NULL;
+	}
 }
 
 int hmap_contains(hmap *map, void *key)
