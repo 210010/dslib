@@ -23,10 +23,8 @@ THE SOFTWARE. */
 #ifndef H_RBTREE
 #define H_RBTREE
 
-typedef struct {
-    void *key;
-    void *value;
-} rbkeyval;
+#include "dslib.h"
+
 typedef struct rbtree rbtree;
 typedef struct rbiterator rbiter;
 
@@ -37,14 +35,14 @@ void rbtree_dispose(rbtree *);
 int rbtree_contains(rbtree *, void *);
 int rbtree_count(rbtree *);
 void *rbtree_get(rbtree *, void *key);
-rbkeyval rbtree_first(rbtree *);
+keyval rbtree_first(rbtree *);
+keyval rbtree_last(rbtree *);
 
 rbiter *rbiter_first(rbtree *);
 rbiter *rbiter_last(rbtree *);
 rbiter *rbiter_next(rbtree *, rbiter *);
 rbiter *rbiter_prev(rbtree *, rbiter *);
-void *rbiter_key(rbiter *);
-void *rbiter_value(rbiter *);
+keyval rbiter_keyval(rbiter *);
 
 #define rbtree_foreach(tree, iter) \
 	for (iter = rbiter_first(tree); iter; iter = rbiter_next(tree, iter))

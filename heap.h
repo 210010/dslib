@@ -23,18 +23,12 @@
 #ifndef H_HEAP
 #define H_HEAP
 
-typedef struct {
-    void *key;
-    void *value;
-} bhkeyval;
 typedef struct bheap bheap;
  
-bheap *bheap_new_alloc(int (*compare)(void *, void *), void (*dispose_key)(void *), void (*dispose_value)(void *));
+bheap *bheap_new_alloc(int, int (*compare)(void *, void *), void (*dispose_key)(void *), void (*dispose_value)(void *));
 void bheap_add(bheap *heap, void *key, void *value);
 void *bheap_pop(bheap *);
-void *bheap_popval(bheap *);
 void *bheap_peek(bheap *);
-void *bheap_peekval(bheap *);
 void bheap_del(bheap *heap, void *key);
 void bheap_dispose(bheap *heap);
 

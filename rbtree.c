@@ -20,12 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
 
-#include "rbtree.h"
 #include <stdlib.h>
+#include "rbtree.h"
 
 typedef struct rbnode {
-	void *key;
-	void *value;
+	keyval keyval;
 	int red;
 	struct rbnode *left;
 	int left_count;
@@ -106,14 +105,14 @@ static void rbtree_treeinserthelp(rbtree *tree, rbnode *z)
 
 	while (x != &nil) {
 		y = x;
-		if (tree->compare(x->key, z->key) == 1) { /* x.key > z.key */
+		if (tree->compare(x->keyval.key, z->keyval.key) == 1) { /* x.key > z.key */
 			x = x->left;
 		} else { /* x,key <= z.key */
 			x = x->right;
 		}
 	}
 	z->parent = y;
-	if (y == tree->root || tree->compare(y->key, z->key) == 1) { /* y.key > z.key */
+	if (y == tree->root || tree->compare(y->keyval.key, z->keyval.key) == 1) { /* y.key > z.key */
 		y->left = z;
 	} else {
 		y->right = z;
@@ -167,8 +166,8 @@ static void rbtree_treedesthelper(rbtree *tree, rbnode *x)
 	if (x != &nil) {
 		rbtree_treedesthelper(tree, x->left);
 		rbtree_treedesthelper(tree, x->right);
-		tree->dispose_key(x->key);
-		tree->dispose_value(x->value);
+		tree->dispose_key(x->keyval.key);
+		tree->dispose_value(x->keyval.value);
 		free(x);
 	}
 }
@@ -180,8 +179,8 @@ static rbnode *rbtree_query(rbtree *tree, void *key)
 	if (x == &nil)
 		return NULL;
 
-	while (tree->compare(x->key, key) != 0) {
-		if (tree->compare(x->key, key) == 1)
+	while (tree->compare(x->keyval.key, key) != 0) {
+		if (tree->compare(x->keyval.key, key) == 1)
 			x = x->left;
 		else
 			x = x->right;
@@ -265,12 +264,14 @@ rbtree *rbtree_new(int (*compare)(void *, void *), void (*dispose_key)(void *), 
 		nil.right = &nil;
 		nil.parent = &nil;
 		nil.red = 0;
-		nil.key = 0;
+		nil.keyval.key = 0;
+		nil.keyval.value = 0;
 	}
 
 	temp = tree->root = (rbnode *)malloc(sizeof (rbnode));
 	temp->parent = temp->left = temp->right = &nil;
-	temp->key = 0;
+	temp->keyval.key = 0;
+	temp->keyval.value = 0;
 	temp->red = 0;
 
 	tree->count = 0;
@@ -288,8 +289,8 @@ void rbtree_add(rbtree *tree, void *key, void *value)
 	rbnode *new_node;
 
 	x = (rbnode *)malloc(sizeof (rbnode));
-	x->key = key;
-	x->value = value;
+	x->keyval.key = key;
+	x->keyval.value = value;
 	x->left_count = 0;
 	x->right_count = 0;
 	tree->count++;
@@ -385,14 +386,14 @@ void rbtree_del(rbtree *tree, void *key)
 		} else {
 			z->parent->right = y;
 		}
-		tree->dispose_key(z->key);
-		tree->dispose_value(z->value);
+		tree->dispose_key(z->keyval.key);
+		tree->dispose_value(z->keyval.value);
 		free(z);
 	} else {
 		if (!(y->red))
 			rbtree_deletefixup(tree, x);
-		tree->dispose_key(z->key);
-		tree->dispose_value(z->value);
+		tree->dispose_key(z->keyval.key);
+		tree->dispose_value(z->keyval.value);
 		free(y);
 	}
 del_end:
@@ -408,7 +409,7 @@ void rbtree_dispose(rbtree *tree)
 
 void *rbtree_get(rbtree *tree, void *key)
 {
-	return rbtree_query(tree, key)->value;
+	return rbtree_query(tree, key)->keyval.value;
 }
 
 int rbtree_contains(rbtree *tree, void *key)
@@ -446,14 +447,9 @@ rbiter *rbiter_prev(rbtree *tree, rbiter *iter)
 	return (rbiter *)rbtree_before(tree, iter);
 }
 
-void *rbiter_key(rbiter *iter)
+keyval rbiter_key(rbiter *iter)
 {
-	return ((rbnode *)iter)->key;
-}
-
-void *rbiter_value(rbiter *iter)
-{
-	return ((rbnode *)iter)->value;
+	return ((rbnode *)iter)->keyval;
 }
 
 rbiter *rbiter_last(rbtree *tree)
