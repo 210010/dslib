@@ -31,5 +31,6 @@ void hmap_del(hmap *, void *key);
 int hmap_contains(hmap *, void *key);
 int hmap_count(hmap *);
 void *hmap_get(hmap *, void *key);
+void hmap_dispose(hmap *);
 
 #endif

@@ -7,7 +7,7 @@ typedef struct {
 } keyval;
 
 #define get_struct(ptr, type, member) \
-	((type *)((char *)(ptr)–(unsigned long)(&((type *)0)->member)))
+	((type *)((char *)(ptr)?unsigned long)(&((type *)0)->member)))
 
 int compare_int(void *a, void *b);
 

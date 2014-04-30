@@ -48,6 +48,17 @@ hmap *hmap_new(int size, int(*hash)(void *key), void(*dispose_key)(void *), void
     return map;
 }
 
+void hmap_dispose(hmap *map)
+{
+	int i;
+
+	for (i = 0; i < size; ++i)
+	if (data[i])
+		rbtree_dispose(data[i]);
+
+	free(map);
+}
+
 void hmap_add(hmap *map, void *key, void *value)
 {
     int hash, index;
@@ -73,6 +84,7 @@ void hmap_del(hmap *map, void *key)
     rbtree_del(map->data[index], hash);
 	map->dispose_key(key);
 	map->count--;
+	map->data[index] = NULL;
 }
 
 int hmap_contains(hmap *map, void *key)
