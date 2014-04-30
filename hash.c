@@ -52,9 +52,9 @@ void hmap_dispose(hmap *map)
 {
 	int i;
 
-	for (i = 0; i < size; ++i)
-	if (data[i])
-		rbtree_dispose(data[i]);
+	for (i = 0; i < map->size; ++i)
+	if (map->data[i])
+		rbtree_dispose(map->data[i]);
 
 	free(map);
 }
