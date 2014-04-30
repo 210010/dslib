@@ -135,7 +135,8 @@ static rbnode *rbtree_after(rbtree *tree, rbnode *x)
 			x = y;
 			y = y->parent;
 		}
-		if (y == root) return (&nil);
+		if (y == root) 
+			return (&nil);
 		return (y);
 	}
 }
@@ -396,7 +397,7 @@ void rbtree_del(rbtree *tree, void *key)
 		tree->dispose_value(z->keyval.value);
 		free(y);
 	}
-del_end:
+
 	return;
 }
 
@@ -439,12 +440,16 @@ rbiter *rbiter_first(rbtree *tree)
 
 rbiter *rbiter_next(rbtree *tree, rbiter *iter)
 {
-	return (rbiter *)rbtree_after(tree, iter);
+	rbnode *node;
+
+	return (rbiter *)((node = rbtree_after(tree, (rbnode *)iter)) == &nil ? NULL : node);
 }
 
 rbiter *rbiter_prev(rbtree *tree, rbiter *iter)
 {
-	return (rbiter *)rbtree_before(tree, iter);
+	rbnode *node;
+
+	return (rbiter *)((node = rbtree_before(tree, (rbnode *)iter)) == &nil ? NULL : node);
 }
 
 keyval rbiter_key(rbiter *iter)
@@ -465,4 +470,9 @@ rbiter *rbiter_last(rbtree *tree)
 		node = node->right;
 
 	return (rbiter *)node;
+}
+
+keyval rbiter_keyval(rbiter *iter)
+{
+	return ((rbnode *)iter)->keyval;
 }

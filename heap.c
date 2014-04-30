@@ -30,31 +30,32 @@
 #define FIRST 1
 #define SWAP(data, a, b, tmp) tmp = data[a]; data[a] = data[b]; data[b] = tmp
 
-typedef struct bhkeyval {
-    BH_KEY_TYPE key;
-    BH_VALUE_TYPE value;
-} bhkeyval;
-
 struct bheap {
+	int(*compare)(void *, void *);
+	void(*dispose_key)(void *);
+	void(*dispose_value)(void *);
     unsigned int size; // Size of the allocated memory (in number of items)
     unsigned int count; // Count of the elements in the heap
-    bhkeyval *data; // Array with the elements
+    keyval *data; // Array with the elements
 };
 
-bheap *bheap_new(int size)
+bheap *bheap_new(int size, int(*compare)(void *, void *), void(*dispose_key)(void *), void(*dispose_value)(void *))
 {
 	bheap *heap = malloc(sizeof(bheap));
 	heap->size = size;
 	heap->count = 0;
-	heap->data = malloc(sizeof(bhkeyval) * (size + 1));
+	heap->data = malloc(sizeof(keyval) * (size + 1));
+	heap->compare = compare;
+	heap->dispose_key = dispose_key;
+	heap->dispose_value = dispose_value;
 
 	return heap;
 }
 
 static void heapify(bheap *heap, int i)
 {
-	bhkeyval *data = heap->data;
-    bhkeyval tmp;
+	keyval *data = heap->data;
+    keyval tmp;
     
 	int count = heap->count;
 	int left, right, swap;
@@ -67,12 +68,12 @@ static void heapify(bheap *heap, int i)
 
 		swap = i;
 
-		if (BH_COMPARE(heap->data[i].key, heap->data[left].key) > 0)
+		if (heap->compare(heap->data[i].key, heap->data[left].key) > 0)
 			swap = left;
 
 		right = RIGHT(i);
 
-		if (right <= count && BH_COMPARE(heap->data[right].key, heap->data[swap].key) < 0)
+		if (right <= count && heap->compare(heap->data[right].key, heap->data[swap].key) < 0)
 			swap = right;
 
 		if (swap == i)
@@ -83,18 +84,18 @@ static void heapify(bheap *heap, int i)
 	}
 }
 
-void bheap_add(bheap *heap, BH_KEY_TYPE key, BH_VALUE_TYPE value)
+void bheap_add(bheap *heap, void *key, void *value)
 {
 	int c = heap->count + 1, p;
-	bhkeyval *data = heap->data;
-    bhkeyval tmp;
+	keyval *data = heap->data;
+    keyval tmp;
 
     data[c].key = key;
 	data[c].value = value;
 
 	p = PARENT(c);
 	while (p > 0) {
-		if (BH_COMPARE(data[p].key, data[c].key) < 0)
+		if (heap->compare(data[p].key, data[c].key) < 0)
 			break;
 		else
 			SWAP(data, p, c, tmp);
@@ -105,13 +106,12 @@ void bheap_add(bheap *heap, BH_KEY_TYPE key, BH_VALUE_TYPE value)
 	heap->count++;
 }
 
-BH_KEY_TYPE bheap_pop(bheap *heap)
+keyval bheap_pop(bheap *heap)
 {
-	BH_KEY_TYPE ret;
-    bhkeyval *data = heap->data;
-
-	ret = data[FIRST].key;
-    BH_DISPOSE_VALUE(data[FIRST].value);
+	keyval ret;
+    keyval *data = heap->data;
+    
+	ret = data[FIRST];
 	data[FIRST] = data[heap->count];
 	heapify(heap, FIRST);
 	heap->count--;
@@ -119,38 +119,19 @@ BH_KEY_TYPE bheap_pop(bheap *heap)
 	return ret;
 }
 
-BH_VALUE_TYPE bheap_popval(bheap *heap)
+keyval bheap_peek(bheap *heap)
 {
-	BH_VALUE_TYPE ret;
-    bhkeyval *data = heap->data;
-    
-	ret = data[FIRST].value;
-    BH_DISPOSE_KEY(data[FIRST].key);
-	data[FIRST] = data[heap->count];
-	heapify(heap, FIRST);
-	heap->count--;
-    
-	return ret;
+	return heap->data[FIRST];
 }
 
-BH_KEY_TYPE bheap_peek(bheap *heap)
+void bheap_del(bheap *heap, void *key)
 {
-	return heap->data[FIRST].key;
-}
-
-BH_VALUE_TYPE bheap_peekval(bheap *heap)
-{
-    return heap->data[FIRST].value;
-}
-
-void bheap_del(bheap *heap, BH_KEY_TYPE key)
-{
-    bhkeyval *data = heap->data;
+    keyval *data = heap->data;
     int count = heap->count;
 	int i;
 
 	for (i = FIRST; i <= count; ++i)
-		if (key == data[i].key)
+		if (heap->compare(key, data[i].key))
 			break;
 
 	if (i > count)
@@ -163,11 +144,11 @@ void bheap_del(bheap *heap, BH_KEY_TYPE key)
 
 void bheap_dispose(bheap *heap)
 {
-    int i;
+    unsigned int i;
     
     for (i = 0; i < heap->count; ++i) {
-        BH_DISPOSE_KEY(heap->data[i].key);
-        BH_DISPOSE_VALUE(heap->data[i].value);
+        heap->dispose_key(heap->data[i].key);
+        heap->dispose_value(heap->data[i].value);
     }
     
 	free(heap->data);
